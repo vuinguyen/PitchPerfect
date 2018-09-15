@@ -13,19 +13,16 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
 
   var audioRecorder: AVAudioRecorder!
 
+  // MARK: Outlets
+
   @IBOutlet weak var recordingLabel: UILabel!
   @IBOutlet weak var recordButton: UIButton!
   @IBOutlet weak var stopRecordingButton: UIButton!
-  
-  override func viewDidLoad() {
-    super.viewDidLoad()
-    stopRecordingButton.isEnabled = false
-  }
+
+  // MARK: Actions
 
   @IBAction func recordAudio(_ sender: Any) {
-    recordingLabel.text = "Recording in Progress"
-    stopRecordingButton.isEnabled = true
-    recordButton.isEnabled = true
+    configureUI(isRecordingState: true)
 
     let dirPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] as String
     let recordingName = "recordedVoice.wav"
@@ -43,13 +40,28 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
   }
 
   @IBAction func stopRecording(_ sender: Any) {
-    recordButton.isEnabled = true
-    stopRecordingButton.isEnabled = false
-    recordingLabel.text = "Tap To Record"
+    configureUI(isRecordingState: false)
     audioRecorder.stop()
     let audioSession = AVAudioSession.sharedInstance()
     try! audioSession.setActive(false)
   }
+
+  // MARK: - UIViewController
+
+  override func viewDidLoad() {
+    super.viewDidLoad()
+    configureUI(isRecordingState: false)
+  }
+
+  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+    if segue.identifier == "stopRecording" {
+      let playSoundsVC = segue.destination as! PlaySoundsViewController
+      let recordedAudioURL = sender as! URL
+      playSoundsVC.recordedAudioURL = recordedAudioURL
+    }
+  }
+
+  // MARK: - Audio Recorder Delegate
 
   func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
     if flag {
@@ -59,11 +71,18 @@ class RecordSoundsViewController: UIViewController, AVAudioRecorderDelegate {
     }
   }
 
-  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-    if segue.identifier == "stopRecording" {
-      let playSoundsVC = segue.destination as! PlaySoundsViewController
-      let recordedAudioURL = sender as! URL
-      playSoundsVC.recordedAudioURL = recordedAudioURL
+  // MARK: - Helper Function
+  // sets the values for the recording label, recording button, and stop recording button
+  // based on the app state of recording or not
+  func configureUI(isRecordingState: Bool = false) -> Void {
+    if isRecordingState == true {
+      recordingLabel.text = "Recording in Progress"
+      recordButton.isEnabled = false
+      stopRecordingButton.isEnabled = true
+    } else {
+      recordingLabel.text = "Tap To Record"
+      recordButton.isEnabled = true
+      stopRecordingButton.isEnabled = false
     }
   }
 }

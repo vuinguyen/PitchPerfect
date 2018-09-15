@@ -56,6 +56,8 @@ class PlaySoundsViewController: UIViewController {
     stopAudio()
   }
 
+  // MARK: UIViewController
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     setupAudio()
